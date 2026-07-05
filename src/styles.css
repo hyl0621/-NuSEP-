@@ -1,0 +1,498 @@
+:root {
+  color-scheme: light;
+  --ink: #17202a;
+  --muted: #667085;
+  --panel: #ffffff;
+  --panel-strong: #f4f7fb;
+  --line: #d9e1ea;
+  --electric: #f0b43f;
+  --magnetic: #2f8f83;
+  --force: #d95f88;
+  --velocity: #3978d8;
+  --axis-x: #d85252;
+  --axis-y: #2f9473;
+  --axis-z: #486bd9;
+  --shadow: 0 18px 50px rgba(19, 31, 45, 0.13);
+  font-family: "Microsoft YaHei", "Segoe UI", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  color: var(--ink);
+  background:
+    linear-gradient(120deg, rgba(47, 143, 131, 0.11), transparent 36%),
+    linear-gradient(260deg, rgba(240, 180, 63, 0.13), transparent 42%),
+    #edf2f7;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 78px;
+  padding: 14px clamp(16px, 3vw, 34px);
+  border-bottom: 1px solid rgba(23, 32, 42, 0.1);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 14px;
+}
+
+.brand img {
+  width: 92px;
+  height: auto;
+  flex: 0 0 auto;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(1.18rem, 2.3vw, 1.86rem);
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.experiment-switch {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgba(23, 32, 42, 0.12);
+  border-radius: 8px;
+  background: #eef3f8;
+}
+
+.experiment-button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  color: #344255;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.experiment-button.active {
+  color: #fff;
+  background: #2757a8;
+  box-shadow: 0 8px 18px rgba(39, 87, 168, 0.18);
+}
+
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(23, 32, 42, 0.14);
+  border-radius: 8px;
+  color: var(--ink);
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(23, 32, 42, 0.08);
+  cursor: pointer;
+}
+
+.icon-button.primary {
+  color: #fff;
+  background: #2757a8;
+  border-color: #2757a8;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 410px);
+  gap: clamp(14px, 2vw, 22px);
+  padding: clamp(14px, 2vw, 24px);
+}
+
+.stage {
+  display: grid;
+  grid-template-rows: minmax(430px, 66vh) auto 170px;
+  gap: 14px;
+  min-width: 0;
+}
+
+.canvas-shell,
+.chart-shell,
+.control-panel {
+  border: 1px solid rgba(23, 32, 42, 0.1);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.canvas-shell {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  min-height: 420px;
+}
+
+#simCanvas,
+#chartCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#simCanvas {
+  cursor: grab;
+  touch-action: none;
+}
+
+#simCanvas.is-dragging {
+  cursor: grabbing;
+}
+
+.mode-optics #simCanvas {
+  cursor: default;
+}
+
+.mode-em .optics-controls,
+.mode-optics .em-controls {
+  display: none;
+}
+
+.stage-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  max-width: calc(100% - 28px);
+  padding: 8px 11px;
+  border-radius: 6px;
+  color: #fff;
+  background: rgba(23, 32, 42, 0.82);
+  font-weight: 700;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+}
+
+.legend {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 12px;
+  max-width: min(560px, calc(100% - 28px));
+  padding: 9px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.84);
+  color: #26313f;
+  font-size: 0.82rem;
+}
+
+.dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 5px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.dot.electric {
+  background: var(--electric);
+}
+
+.dot.magnetic {
+  background: var(--magnetic);
+}
+
+.dot.force {
+  background: var(--force);
+}
+
+.dot.velocity {
+  background: var(--velocity);
+}
+
+.dot.interference {
+  background: #2757a8;
+}
+
+.dot.envelope {
+  background: #d95f88;
+}
+
+.dot.principal {
+  background: #2f8f83;
+}
+
+.readout-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.metric-tile {
+  min-height: 78px;
+  padding: 13px 14px;
+  border: 1px solid rgba(23, 32, 42, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 12px 30px rgba(23, 32, 42, 0.08);
+}
+
+.metric-tile span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.metric-tile strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.chart-shell {
+  overflow: hidden;
+  border-radius: 8px;
+  min-height: 150px;
+}
+
+.control-panel {
+  display: grid;
+  align-content: start;
+  gap: 13px;
+  max-height: calc(100vh - 110px);
+  overflow: auto;
+  padding: 14px;
+  border-radius: 8px;
+}
+
+.panel-section {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-strong);
+}
+
+.section-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.section-title h2 {
+  font-size: 1rem;
+}
+
+.section-title span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.preset-button {
+  min-height: 40px;
+  border: 1px solid rgba(23, 32, 42, 0.15);
+  border-radius: 7px;
+  color: #26313f;
+  background: #fff;
+  cursor: pointer;
+}
+
+.preset-button.active {
+  color: #fff;
+  border-color: #2757a8;
+  background: #2757a8;
+}
+
+.range-row {
+  display: grid;
+  grid-template-columns: minmax(76px, 1fr) 92px;
+  gap: 8px 10px;
+  align-items: center;
+  margin-top: 11px;
+  color: #2b3542;
+}
+
+.range-row span {
+  min-width: 0;
+  font-size: 0.88rem;
+}
+
+.number-input {
+  justify-self: end;
+  width: 92px;
+  min-width: 0;
+  padding: 5px 7px;
+  border: 1px solid rgba(23, 32, 42, 0.18);
+  border-radius: 6px;
+  color: var(--ink);
+  background: #fff;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.range-row input[type="range"] {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: #2757a8;
+}
+
+.range-row.axis-x input {
+  accent-color: var(--axis-x);
+}
+
+.range-row.axis-y input {
+  accent-color: var(--axis-y);
+}
+
+.range-row.axis-z input {
+  accent-color: var(--axis-z);
+}
+
+.range-row.optics-axis input[type="range"] {
+  accent-color: #2757a8;
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 36px;
+  margin-top: 8px;
+  color: #2b3542;
+}
+
+.switch-row input {
+  width: 18px;
+  height: 18px;
+  accent-color: #2757a8;
+}
+
+.formula-block {
+  display: grid;
+  gap: 6px;
+  margin-top: 13px;
+  padding: 11px 12px;
+  border-radius: 7px;
+  color: #243042;
+  background: #fff;
+  font-family: "Cambria Math", "Times New Roman", serif;
+  font-size: 1rem;
+}
+
+.vector-readout {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.vector-readout p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.vector-readout strong {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1060px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .control-panel {
+    max-height: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .brand img {
+    width: 76px;
+  }
+
+  .stage {
+    grid-template-rows: minmax(360px, 58vh) auto 150px;
+  }
+
+  .readout-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metric-tile strong {
+    font-size: 1.18rem;
+  }
+
+  .preset-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 470px) {
+  .workspace {
+    padding: 10px;
+  }
+
+  .stage {
+    grid-template-rows: minmax(320px, 54vh) auto 140px;
+  }
+
+  .readout-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .legend {
+    left: 10px;
+    right: 10px;
+    justify-content: flex-start;
+  }
+}

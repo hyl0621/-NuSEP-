@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>大学物理数值仿真实验平台</title>
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body class="mode-em">
+    <header class="app-header">
+      <div class="brand">
+        <img src="assets/NuSEPlogo.png" alt="NuSEP" />
+        <div>
+          <p class="eyebrow">AI辅助编程数值仿真实验设计</p>
+          <h1 id="appTitle">大学物理数值仿真实验平台</h1>
+        </div>
+      </div>
+
+      <div class="experiment-switch" aria-label="实验选择">
+        <button class="experiment-button active" type="button" data-experiment="em">电磁学</button>
+        <button class="experiment-button" type="button" data-experiment="optics">物理光学</button>
+      </div>
+
+      <div class="header-actions" aria-label="仿真控制">
+        <button class="icon-button primary" id="toggleRun" type="button" title="开始或暂停">Ⅱ</button>
+        <button class="icon-button" id="stepOnce" type="button" title="单步计算">›</button>
+        <button class="icon-button" id="resetSim" type="button" title="重置">↺</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="stage" aria-label="仿真显示区">
+        <div class="canvas-shell">
+          <canvas id="simCanvas" aria-label="数值仿真画布"></canvas>
+          <div class="stage-badge" id="stageBadge">带电粒子在电磁场中的运动</div>
+          <div class="legend" id="legend"></div>
+        </div>
+
+        <div class="readout-strip">
+          <article class="metric-tile">
+            <span id="metric1Label">速率 |v|</span>
+            <strong id="metric1Value">0.00</strong>
+          </article>
+          <article class="metric-tile">
+            <span id="metric2Label">归一化动能</span>
+            <strong id="metric2Value">0.00</strong>
+          </article>
+          <article class="metric-tile">
+            <span id="metric3Label">回旋半径</span>
+            <strong id="metric3Value">--</strong>
+          </article>
+          <article class="metric-tile">
+            <span id="metric4Label">回旋周期</span>
+            <strong id="metric4Value">--</strong>
+          </article>
+          <article class="metric-tile">
+            <span id="metric5Label">俯仰角</span>
+            <strong id="metric5Value">--</strong>
+          </article>
+        </div>
+
+        <div class="chart-shell" aria-label="曲线图">
+          <canvas id="chartCanvas"></canvas>
+        </div>
+      </section>
+
+      <aside class="control-panel" aria-label="参数面板">
+        <section class="panel-section em-controls">
+          <div class="section-title">
+            <h2>电磁学场景</h2>
+            <span>presets</span>
+          </div>
+          <div class="preset-grid">
+            <button type="button" class="preset-button active" data-preset="helix">纯磁场螺旋</button>
+            <button type="button" class="preset-button" data-preset="drift">E×B 漂移</button>
+            <button type="button" class="preset-button" data-preset="selector">速度选择器</button>
+            <button type="button" class="preset-button" data-preset="accelerator">电场加速</button>
+            <button type="button" class="preset-button" data-preset="negative">负电荷偏转</button>
+          </div>
+        </section>
+
+        <section class="panel-section optics-controls">
+          <div class="section-title">
+            <h2>物理光学场景</h2>
+            <span>presets</span>
+          </div>
+          <div class="preset-grid">
+            <button type="button" class="preset-button active" data-optics-preset="double">双缝干涉</button>
+            <button type="button" class="preset-button" data-optics-preset="single">夫琅禾费单缝</button>
+            <button type="button" class="preset-button" data-optics-preset="grating">平面衍射光栅</button>
+          </div>
+        </section>
+
+        <section class="panel-section em-controls">
+          <div class="section-title">
+            <h2>电荷与视图</h2>
+            <span>charge / view</span>
+          </div>
+          <label class="range-row">
+            <span>荷质比 q/m</span>
+            <input id="qOverMValue" class="number-input" data-number="qOverM" type="number" min="-3" max="3" step="0.05" value="1" aria-label="荷质比 q/m 数值" />
+            <input id="qOverM" data-param="qOverM" type="range" min="-3" max="3" step="0.05" value="1" />
+          </label>
+          <label class="range-row">
+            <span>时间步长 Δt</span>
+            <input id="dtValue" class="number-input" data-number="dt" type="number" min="0.004" max="0.05" step="0.001" value="0.018" aria-label="时间步长数值" />
+            <input id="dt" data-param="dt" type="range" min="0.004" max="0.05" step="0.001" value="0.018" />
+          </label>
+          <label class="range-row">
+            <span>计算步数/帧</span>
+            <input id="stepsPerFrameValue" class="number-input" data-number="stepsPerFrame" type="number" min="1" max="14" step="1" value="5" aria-label="每帧计算步数数值" />
+            <input id="stepsPerFrame" data-param="stepsPerFrame" type="range" min="1" max="14" step="1" value="5" />
+          </label>
+          <label class="range-row">
+            <span>视图缩放</span>
+            <input id="zoomValue" class="number-input" data-number="zoom" type="number" min="18" max="72" step="1" value="38" aria-label="视图缩放数值" />
+            <input id="zoom" data-param="zoom" type="range" min="18" max="72" step="1" value="38" />
+          </label>
+        </section>
+
+        <section class="panel-section em-controls">
+          <div class="section-title">
+            <h2>电场 E</h2>
+            <span>normalized</span>
+          </div>
+          <label class="range-row axis-x">
+            <span>Ex</span>
+            <input id="ExValue" class="number-input" data-number="Ex" type="number" min="-2" max="2" step="0.02" value="0" aria-label="Ex 数值" />
+            <input id="Ex" data-param="Ex" type="range" min="-2" max="2" step="0.02" value="0" />
+          </label>
+          <label class="range-row axis-y">
+            <span>Ey</span>
+            <input id="EyValue" class="number-input" data-number="Ey" type="number" min="-2" max="2" step="0.02" value="0" aria-label="Ey 数值" />
+            <input id="Ey" data-param="Ey" type="range" min="-2" max="2" step="0.02" value="0" />
+          </label>
+          <label class="range-row axis-z">
+            <span>Ez</span>
+            <input id="EzValue" class="number-input" data-number="Ez" type="number" min="-2" max="2" step="0.02" value="0" aria-label="Ez 数值" />
+            <input id="Ez" data-param="Ez" type="range" min="-2" max="2" step="0.02" value="0" />
+          </label>
+        </section>
+
+        <section class="panel-section em-controls">
+          <div class="section-title">
+            <h2>磁场 B</h2>
+            <span>normalized</span>
+          </div>
+          <label class="range-row axis-x">
+            <span>Bx</span>
+            <input id="BxValue" class="number-input" data-number="Bx" type="number" min="-2" max="2" step="0.02" value="0" aria-label="Bx 数值" />
+            <input id="Bx" data-param="Bx" type="range" min="-2" max="2" step="0.02" value="0" />
+          </label>
+          <label class="range-row axis-y">
+            <span>By</span>
+            <input id="ByValue" class="number-input" data-number="By" type="number" min="-2" max="2" step="0.02" value="0" aria-label="By 数值" />
+            <input id="By" data-param="By" type="range" min="-2" max="2" step="0.02" value="0" />
+          </label>
+          <label class="range-row axis-z">
+            <span>Bz</span>
+            <input id="BzValue" class="number-input" data-number="Bz" type="number" min="-2" max="2" step="0.02" value="1" aria-label="Bz 数值" />
+            <input id="Bz" data-param="Bz" type="range" min="-2" max="2" step="0.02" value="1" />
+          </label>
+        </section>
+
+        <section class="panel-section em-controls">
+          <div class="section-title">
+            <h2>初速度 v0</h2>
+            <span>reset applies</span>
+          </div>
+          <label class="range-row axis-x">
+            <span>vx0</span>
+            <input id="vxValue" class="number-input" data-number="vx" type="number" min="-3" max="3" step="0.05" value="1.35" aria-label="vx0 数值" />
+            <input id="vx" data-param="vx" type="range" min="-3" max="3" step="0.05" value="1.35" />
+          </label>
+          <label class="range-row axis-y">
+            <span>vy0</span>
+            <input id="vyValue" class="number-input" data-number="vy" type="number" min="-3" max="3" step="0.05" value="0.25" aria-label="vy0 数值" />
+            <input id="vy" data-param="vy" type="range" min="-3" max="3" step="0.05" value="0.25" />
+          </label>
+          <label class="range-row axis-z">
+            <span>vz0</span>
+            <input id="vzValue" class="number-input" data-number="vz" type="number" min="-3" max="3" step="0.05" value="0.72" aria-label="vz0 数值" />
+            <input id="vz" data-param="vz" type="range" min="-3" max="3" step="0.05" value="0.72" />
+          </label>
+        </section>
+
+        <section class="panel-section optics-controls">
+          <div class="section-title">
+            <h2>光源与屏幕</h2>
+            <span>source / screen</span>
+          </div>
+          <label class="range-row optics-axis">
+            <span>波长 λ / nm</span>
+            <input id="wavelengthValue" class="number-input" data-opt-number="wavelength" type="number" min="380" max="760" step="1" value="532" aria-label="波长数值" />
+            <input id="wavelength" data-opt-param="wavelength" type="range" min="380" max="760" step="1" value="532" />
+          </label>
+          <label class="range-row optics-axis">
+            <span>屏距 L / m</span>
+            <input id="screenDistanceValue" class="number-input" data-opt-number="screenDistance" type="number" min="0.2" max="3" step="0.01" value="1.2" aria-label="屏距数值" />
+            <input id="screenDistance" data-opt-param="screenDistance" type="range" min="0.2" max="3" step="0.01" value="1.2" />
+          </label>
+          <label class="range-row optics-axis">
+            <span>屏幕跨度 / mm</span>
+            <input id="screenSpanValue" class="number-input" data-opt-number="screenSpan" type="number" min="4" max="240" step="1" value="24" aria-label="屏幕跨度数值" />
+            <input id="screenSpan" data-opt-param="screenSpan" type="range" min="4" max="240" step="1" value="24" />
+          </label>
+        </section>
+
+        <section class="panel-section optics-controls">
+          <div class="section-title">
+            <h2>狭缝参数</h2>
+            <span>slits</span>
+          </div>
+          <label class="range-row optics-axis">
+            <span>缝距 / 光栅常数 d / µm</span>
+            <input id="slitSeparationValue" class="number-input" data-opt-number="slitSeparation" type="number" min="4" max="800" step="1" value="220" aria-label="缝距或光栅常数微米数值" />
+            <input id="slitSeparation" data-opt-param="slitSeparation" type="range" min="4" max="800" step="1" value="220" />
+          </label>
+          <label class="range-row optics-axis">
+            <span>单缝宽 a / µm</span>
+            <input id="slitWidthValue" class="number-input" data-opt-number="slitWidth" type="number" min="5" max="120" step="0.5" value="35" aria-label="单缝宽微米数值" />
+            <input id="slitWidth" data-opt-param="slitWidth" type="range" min="5" max="120" step="0.5" value="35" />
+          </label>
+          <label class="range-row optics-axis">
+            <span>光栅条数 N</span>
+            <input id="slitCountValue" class="number-input" data-opt-number="slitCount" type="number" min="2" max="12" step="1" value="2" aria-label="光栅条数数值" />
+            <input id="slitCount" data-opt-param="slitCount" type="range" min="2" max="12" step="1" value="2" />
+          </label>
+        </section>
+
+        <section class="panel-section optics-controls">
+          <div class="section-title">
+            <h2>相位与显示</h2>
+            <span>phase / display</span>
+          </div>
+          <label class="range-row optics-axis">
+            <span>相位差 φ / π</span>
+            <input id="phaseOffsetValue" class="number-input" data-opt-number="phaseOffset" type="number" min="-2" max="2" step="0.01" value="0" aria-label="相位差数值" />
+            <input id="phaseOffset" data-opt-param="phaseOffset" type="range" min="-2" max="2" step="0.01" value="0" />
+          </label>
+          <label class="range-row optics-axis">
+            <span>显示增益</span>
+            <input id="intensityGainValue" class="number-input" data-opt-number="intensityGain" type="number" min="0.4" max="3" step="0.05" value="1.2" aria-label="显示增益数值" />
+            <input id="intensityGain" data-opt-param="intensityGain" type="range" min="0.4" max="3" step="0.05" value="1.2" />
+          </label>
+          <div class="formula-block">
+            <p>夫琅禾费单缝：I = I0 (sin β / β)²</p>
+            <p>β = πay / (λL)</p>
+            <p>双缝/光栅：I = I_single · [sin(Nδ/2)/(N sin(δ/2))]²</p>
+            <p>δ = 2πdy / (λL) + φ</p>
+          </div>
+        </section>
+
+        <section class="panel-section em-controls">
+          <div class="section-title">
+            <h2>观测</h2>
+            <span>layers</span>
+          </div>
+          <label class="switch-row">
+            <input id="showVectors" type="checkbox" checked />
+            <span>矢量分解</span>
+          </label>
+          <label class="switch-row">
+            <input id="showGrid" type="checkbox" checked />
+            <span>参考网格</span>
+          </label>
+          <label class="switch-row">
+            <input id="compareCharge" type="checkbox" />
+            <span>反号电荷对照</span>
+          </label>
+          <div class="formula-block">
+            <p>F = q(E + v × B)</p>
+            <p>R = v⊥ / |qB/m|</p>
+            <p>v<sub>E×B</sub> = E × B / B²</p>
+          </div>
+          <div class="vector-readout">
+            <p><span>加速度 |a|</span><strong id="forceReadout">0.00</strong></p>
+            <p><span>E×B 漂移</span><strong id="driftReadout">--</strong></p>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <script src="src/opticsModel.js"></script>
+    <script src="src/simulator.js"></script>
+  </body>
+</html>
